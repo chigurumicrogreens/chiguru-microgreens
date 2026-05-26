@@ -2,6 +2,23 @@ const STORE = {
   whatsappNumber: "919663398061",
   upiId: "9663398061@upi",
   payeeName: "Praveen Vanahalli",
+  orderDatabaseUrl: "",
+  googleFormUrl:
+    "https://docs.google.com/forms/d/e/1FAIpQLScnPv-PYpPH14vQvmkQtEkG_9HDSE12LPe1GS43EKkA8p7_kQ/formResponse",
+  googleFormEntries: {
+    orderId: "entry.1837942117",
+    customerName: "entry.444893747",
+    phone: "entry.1529726925",
+    deliverySlot: "entry.2128148307",
+    items: "entry.390305662",
+    subtotal: "entry.1994514591",
+    deliveryFee: "entry.2058519695",
+    total: "entry.957887164",
+    upiId: "entry.2030549416",
+    paymentStatus: "entry.1431575225",
+    orderStatus: "entry.515044861",
+    notes: "entry.1574196271",
+  },
   freeDeliveryAt: 799,
   deliveryFees: {
     "Local Bengaluru": 49,
@@ -225,40 +242,137 @@ function updateUpiLink(total) {
   paymentAmount.textContent = formatRupees(amount);
 }
 
-function buildOrderMessage(form) {
+function getCartLines() {
+  return [...cart.entries()]
+    .filter(([id]) => getProduct(id))
+    .map(([id, qty]) => {
+      const product = getProduct(id);
+      return {
+        id,
+        name: product.name,
+        unit: product.unit,
+        price: product.price,
+        quantity: qty,
+        lineTotal: product.price * qty,
+      };
+    });
+}
+
+function buildOrderData(form) {
   const data = Object.fromEntries(new FormData(form).entries());
   const subtotal = getSubtotal();
   const delivery = getDeliveryFee();
   const total = subtotal + delivery;
-  const lines = [...cart.entries()]
-    .filter(([id]) => getProduct(id))
-    .map(([id, qty]) => {
-      const product = getProduct(id);
-      return `- ${product.name} (${product.unit}) x ${qty}: ${formatRupees(product.price * qty)}`;
-    });
+  const items = getCartLines();
+  const orderId = `CMG-${Date.now().toString(36).toUpperCase()}`;
+
+  return {
+    orderId,
+    createdAt: new Date().toISOString(),
+    customerName: data.name,
+    phone: data.phone,
+    address: data.address,
+    area: data.area,
+    slot: data.slot,
+    notes: data.notes || "",
+    items,
+    subtotal,
+    delivery,
+    total,
+    upiId: STORE.upiId,
+    paymentStatus: "Payment Pending",
+    orderStatus: "New",
+  };
+}
+
+function buildOrderMessage(order) {
+  const lines = order.items.map(
+    (item) =>
+      `- ${item.name} (${item.unit}) x ${item.quantity}: ${formatRupees(item.lineTotal)}`,
+  );
 
   return [
     "New Chiguru Microgreens order",
+    `Order ID: ${order.orderId}`,
     "",
-    `Customer: ${data.name}`,
-    `Phone: ${data.phone}`,
-    `Address: ${data.address}`,
-    `Area: ${data.area}`,
-    `Slot: ${data.slot}`,
-    data.notes ? `Notes: ${data.notes}` : "",
+    `Customer: ${order.customerName}`,
+    `Phone: ${order.phone}`,
+    `Address: ${order.address}`,
+    `Area: ${order.area}`,
+    `Slot: ${order.slot}`,
+    order.notes ? `Notes: ${order.notes}` : "",
     "",
     "Items:",
     ...lines,
     "",
-    `Subtotal: ${formatRupees(subtotal)}`,
-    `Delivery: ${delivery === 0 ? "Free" : formatRupees(delivery)}`,
-    `Total: ${formatRupees(total)}`,
+    `Subtotal: ${formatRupees(order.subtotal)}`,
+    `Delivery: ${order.delivery === 0 ? "Free" : formatRupees(order.delivery)}`,
+    `Total: ${formatRupees(order.total)}`,
+    `Payment Status: ${order.paymentStatus}`,
+    `Order Status: ${order.orderStatus}`,
     "",
     `UPI ID: ${STORE.upiId}`,
     "Payment screenshot will be shared here.",
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+function saveOrderToDatabase(order) {
+  if (!STORE.orderDatabaseUrl) {
+    return saveOrderToGoogleForm(order);
+  }
+
+  return fetch(STORE.orderDatabaseUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify(order),
+  });
+}
+
+function saveOrderToGoogleForm(order) {
+  if (!STORE.googleFormUrl) {
+    return Promise.resolve({ skipped: true });
+  }
+
+  const entries = STORE.googleFormEntries;
+  const formData = new FormData();
+  const itemsText = order.items
+    .map(
+      (item) =>
+        `${item.name} (${item.unit}) x ${item.quantity} = ${formatRupees(item.lineTotal)}`,
+    )
+    .join("\n");
+  const notesText = [
+    order.notes,
+    `Address: ${order.address}`,
+    `Area: ${order.area}`,
+    `Created: ${order.createdAt}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  formData.append(entries.orderId, order.orderId);
+  formData.append(entries.customerName, order.customerName);
+  formData.append(entries.phone, order.phone);
+  formData.append(entries.deliverySlot, order.slot);
+  formData.append(entries.items, itemsText);
+  formData.append(entries.subtotal, order.subtotal);
+  formData.append(entries.deliveryFee, order.delivery);
+  formData.append(entries.total, order.total);
+  formData.append(entries.upiId, order.upiId);
+  formData.append(entries.paymentStatus, order.paymentStatus);
+  formData.append(entries.orderStatus, order.orderStatus);
+  formData.append(entries.notes, notesText);
+
+  return fetch(STORE.googleFormUrl, {
+    method: "POST",
+    mode: "no-cors",
+    body: formData,
+  });
 }
 
 document.addEventListener("click", (event) => {
@@ -315,19 +429,36 @@ document.addEventListener("click", (event) => {
 
 document.querySelector("[name='area']").addEventListener("change", renderCart);
 
-document.querySelector("[data-checkout-form]").addEventListener("submit", (event) => {
+document.querySelector("[data-checkout-form]").addEventListener("submit", async (event) => {
   event.preventDefault();
   const message = document.querySelector("[data-form-message]");
+  const submitButton = event.currentTarget.querySelector("button[type='submit']");
 
   if (cart.size === 0) {
     message.textContent = "Please add at least one item before placing the order.";
     return;
   }
 
-  const orderText = buildOrderMessage(event.currentTarget);
+  const order = buildOrderData(event.currentTarget);
+  const orderText = buildOrderMessage(order);
   const whatsappUrl = `https://wa.me/${STORE.whatsappNumber}?text=${encodeURIComponent(orderText)}`;
-  message.textContent = "Opening WhatsApp with your order summary.";
-  window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+  submitButton.disabled = true;
+  message.textContent = STORE.orderDatabaseUrl || STORE.googleFormUrl
+    ? "Saving order and opening WhatsApp."
+    : "Opening WhatsApp with your order summary.";
+
+  try {
+    await saveOrderToDatabase({ ...order, whatsappMessage: orderText });
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    message.textContent = `Order ${order.orderId} is ready in WhatsApp.`;
+  } catch (error) {
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    message.textContent =
+      "WhatsApp opened, but the order database could not be reached. Please send the order message.";
+  } finally {
+    submitButton.disabled = false;
+  }
 });
 
 removeUnavailableCartItems();
