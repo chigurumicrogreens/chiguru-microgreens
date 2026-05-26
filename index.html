@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chiguru Microgreens | Fresh Microgreens Delivered</title>
+    <meta
+      name="description"
+      content="Order fresh, naturally grown microgreens from Chiguru Microgreens. Build a cart, choose delivery, and pay with UPI or WhatsApp confirmation."
+    />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Chiguru Microgreens home">
+        <img
+          class="brand-logo"
+          src="images/ChiguruMicrogreens_Logo_Large.png"
+          alt="Chiguru Microgreens logo"
+        />
+        <span>
+          <strong>Chiguru</strong>
+          <small>Microgreens</small>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="#shop">Shop</a>
+        <a href="#subscriptions">Subscriptions</a>
+        <a href="#why">Why us</a>
+        <a href="#checkout">Checkout</a>
+      </nav>
+      <button class="cart-pill" type="button" data-scroll-cart>
+        <span>Cart</span>
+        <strong data-cart-count>0</strong>
+      </button>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow">Farm fresh microgreens in Bengaluru</p>
+          <h1>Chiguru Microgreens</h1>
+          <p>
+            Nutrient-rich greens harvested young, packed fresh, and delivered to
+            homes, cafes, wellness kitchens, and restaurants.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#shop">Start order</a>
+            <a class="button secondary" href="#subscriptions">Weekly plans</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="trust-band" aria-label="Service highlights">
+        <div>
+          <strong>Harvested fresh</strong>
+          <span>Cut close to dispatch for better shelf life.</span>
+        </div>
+        <div>
+          <strong>No harmful chemicals</strong>
+          <span>Clean growing process with quality seeds.</span>
+        </div>
+        <div>
+          <strong>UPI + WhatsApp orders</strong>
+          <span>Simple payment flow for an MVP launch.</span>
+        </div>
+      </section>
+
+      <section class="section" id="shop">
+        <div class="section-heading">
+          <p class="eyebrow">Shop fresh packs</p>
+          <h2>Choose your greens</h2>
+          <p>
+            Beginner-friendly flavours for salads, smoothies, sandwiches, soups,
+            chaats, dosas, and restaurant plating.
+          </p>
+        </div>
+        <div class="product-grid" data-product-grid></div>
+      </section>
+
+      <section class="section split" id="subscriptions">
+        <div>
+          <p class="eyebrow">Weekly freshness</p>
+          <h2>Subscription bundles</h2>
+          <p>
+            Offer customers predictable weekly delivery without building a paid
+            subscription system on day one. Orders can be confirmed manually on
+            WhatsApp and tracked in Google Sheets.
+          </p>
+        </div>
+        <div class="plans">
+          <article>
+            <strong>Starter Box</strong>
+            <span>3 packs weekly</span>
+            <b>₹399 / week</b>
+            <button type="button" data-plan="Starter Box">Add plan</button>
+          </article>
+          <article>
+            <strong>Family Box</strong>
+            <span>6 packs weekly</span>
+            <b>₹749 / week</b>
+            <button type="button" data-plan="Family Box">Add plan</button>
+          </article>
+          <article>
+            <strong>Chef Box</strong>
+            <span>12 packs weekly</span>
+            <b>₹1,399 / week</b>
+            <button type="button" data-plan="Chef Box">Add plan</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="section why" id="why">
+        <div class="section-heading">
+          <p class="eyebrow">Made for new customers</p>
+          <h2>Easy to buy, easy to use</h2>
+        </div>
+        <div class="why-grid">
+          <article>
+            <span>01</span>
+            <h3>Select packs</h3>
+            <p>Browse familiar varieties with flavour notes and suggested uses.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Confirm delivery</h3>
+            <p>Enter customer details and delivery area before payment.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Pay with UPI</h3>
+            <p>Use the generated payment link, then send the order on WhatsApp.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section checkout-section" id="checkout">
+        <div class="section-heading">
+          <p class="eyebrow">Checkout MVP</p>
+          <h2>Review and place order</h2>
+        </div>
+        <div class="checkout-layout">
+          <aside class="cart-panel" aria-label="Shopping cart">
+            <div class="cart-header">
+              <h3>Your cart</h3>
+              <button type="button" data-clear-cart>Clear</button>
+            </div>
+            <div class="cart-items" data-cart-items></div>
+            <dl class="totals">
+              <div>
+                <dt>Items</dt>
+                <dd data-subtotal>₹0</dd>
+              </div>
+              <div>
+                <dt>Delivery</dt>
+                <dd data-delivery>₹0</dd>
+              </div>
+              <div class="grand-total">
+                <dt>Total</dt>
+                <dd data-total>₹0</dd>
+              </div>
+            </dl>
+          </aside>
+
+          <form class="checkout-form" data-checkout-form>
+            <label>
+              Full name
+              <input name="name" autocomplete="name" required />
+            </label>
+            <label>
+              Mobile number
+              <input name="phone" autocomplete="tel" inputmode="tel" required />
+            </label>
+            <label>
+              Delivery address
+              <textarea name="address" rows="3" required></textarea>
+            </label>
+            <label>
+              Delivery area
+              <select name="area" required>
+                <option value="Local Bengaluru">Local Bengaluru</option>
+                <option value="Outer Bengaluru">Outer Bengaluru</option>
+                <option value="Pickup">Pickup from farm</option>
+              </select>
+            </label>
+            <label>
+              Preferred slot
+              <select name="slot" required>
+                <option>Today evening</option>
+                <option>Tomorrow morning</option>
+                <option>Tomorrow evening</option>
+                <option>Weekly subscription call-back</option>
+              </select>
+            </label>
+            <label>
+              Notes
+              <textarea
+                name="notes"
+                rows="2"
+                placeholder="Example: No coriander, call before delivery"
+              ></textarea>
+            </label>
+            <div class="payment-box">
+              <h3>Payment</h3>
+              <p>
+                Pay using UPI, then tap WhatsApp to send order details and
+                payment screenshot. UPI app launch works best on mobile.
+              </p>
+              <div class="upi-details">
+                <div>
+                  <span>UPI ID</span>
+                  <strong data-upi-id></strong>
+                </div>
+                <div>
+                  <span>Amount</span>
+                  <strong data-payment-amount>₹0</strong>
+                </div>
+              </div>
+              <div class="payment-actions">
+                <button class="button secondary" type="button" data-upi-link>
+                  Open UPI app
+                </button>
+                <button class="button quiet" type="button" data-copy-upi>
+                  Copy UPI ID
+                </button>
+                <button class="button primary" type="submit">Send order</button>
+              </div>
+            </div>
+            <p class="form-message" data-form-message role="status"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>Chiguru Microgreens</strong>
+        <span>Fresh microgreens, grow kits, and weekly delivery plans.</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://sites.google.com/view/chiguru-microgreens/home">Original Google Site</a>
+        <a href="https://commons.wikimedia.org/wiki/Category:Microgreen">Product image credits</a>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
