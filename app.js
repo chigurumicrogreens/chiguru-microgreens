@@ -339,7 +339,6 @@ function saveOrderToGoogleForm(order) {
   }
 
   const entries = STORE.googleFormEntries;
-  const formData = new FormData();
   const itemsText = order.items
     .map(
       (item) =>
@@ -355,23 +354,53 @@ function saveOrderToGoogleForm(order) {
     .filter(Boolean)
     .join("\n");
 
-  formData.append(entries.orderId, order.orderId);
-  formData.append(entries.customerName, order.customerName);
-  formData.append(entries.phone, order.phone);
-  formData.append(entries.deliverySlot, order.slot);
-  formData.append(entries.items, itemsText);
-  formData.append(entries.subtotal, order.subtotal);
-  formData.append(entries.deliveryFee, order.delivery);
-  formData.append(entries.total, order.total);
-  formData.append(entries.upiId, order.upiId);
-  formData.append(entries.paymentStatus, order.paymentStatus);
-  formData.append(entries.orderStatus, order.orderStatus);
-  formData.append(entries.notes, notesText);
+  return new Promise((resolve) => {
+    const iframeName = "google-form-submit-frame";
+    let iframe = document.querySelector(`iframe[name="${iframeName}"]`);
 
-  return fetch(STORE.googleFormUrl, {
-    method: "POST",
-    mode: "no-cors",
-    body: formData,
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.name = iframeName;
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+    }
+
+    const form = document.createElement("form");
+    form.action = STORE.googleFormUrl;
+    form.method = "POST";
+    form.target = iframeName;
+    form.style.display = "none";
+
+    const values = {
+      [entries.orderId]: order.orderId,
+      [entries.customerName]: order.customerName,
+      [entries.phone]: order.phone,
+      [entries.deliverySlot]: order.slot,
+      [entries.items]: itemsText,
+      [entries.subtotal]: order.subtotal,
+      [entries.deliveryFee]: order.delivery,
+      [entries.total]: order.total,
+      [entries.upiId]: order.upiId,
+      [entries.paymentStatus]: order.paymentStatus,
+      [entries.orderStatus]: order.orderStatus,
+      [entries.notes]: notesText,
+    };
+
+    Object.entries(values).forEach(([name, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      form.remove();
+      resolve({ submitted: true });
+    }, 1200);
   });
 }
 
